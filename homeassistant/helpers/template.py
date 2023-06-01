@@ -1807,6 +1807,22 @@ def forgiving_as_timestamp(value, default=_SENTINEL):
             raise_no_default("as_timestamp", value)
         return default
 
+def natsort_filter(val, reverse=False, ignore_case=True, attribute=None):
+    """natural sort"""
+    from natsort import natsorted, ns   # pylint: disable=import-outside-toplevel
+    from operator import attrgetter     # pylint: disable=import-outside-toplevel
+
+    if not ignore_case:
+        alg = ns.LOWERCASEFIRST
+    else:
+        alg = ns.IGNORECASE
+
+    if attribute:
+        key=attrgetter(attribute)
+    else:
+        key=None
+
+    return natsorted(val, reverse=reverse, alg=alg, key=key)
 
 def as_datetime(value):
     """Filter and to convert a time string or UNIX timestamp to datetime object."""
@@ -2304,6 +2320,7 @@ class TemplateEnvironment(ImmutableSandboxedEnvironment):
         self.filters["as_datetime"] = as_datetime
         self.filters["as_timedelta"] = as_timedelta
         self.filters["as_timestamp"] = forgiving_as_timestamp
+        self.filters["natsort"] = natsort_filter
         self.filters["as_local"] = dt_util.as_local
         self.filters["timestamp_custom"] = timestamp_custom
         self.filters["timestamp_local"] = timestamp_local
@@ -2351,6 +2368,7 @@ class TemplateEnvironment(ImmutableSandboxedEnvironment):
         self.globals["as_local"] = dt_util.as_local
         self.globals["as_timedelta"] = as_timedelta
         self.globals["as_timestamp"] = forgiving_as_timestamp
+        self.globals["natsort"] = natsort_filter
         self.globals["timedelta"] = timedelta
         self.globals["strptime"] = strptime
         self.globals["urlencode"] = urlencode
